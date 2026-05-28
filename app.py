@@ -8,7 +8,10 @@ from openai import OpenAI
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+st.set_page_config(page_title="Cricket Analytics Assistant", page_icon="🏏")
 
+st.title("🏏 Cricket Analytics Assistant")
+st.write("Ask cricket stats questions from your ball-by-ball database.")
 @st.cache_resource
 def get_connection():
     return duckdb.connect("cricket.db")
@@ -116,10 +119,6 @@ Keep it concise.
 
     return response.choices[0].message.content.strip()
 
-st.set_page_config(page_title="Cricket Analytics Assistant", page_icon="🏏")
-
-st.title("🏏 Cricket Analytics Assistant")
-st.write("Ask cricket stats questions from your ball-by-ball database.")
 
 question = st.text_input("Ask a question", placeholder="Who is the top run scorer in IPL 2015?")
 
