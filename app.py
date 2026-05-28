@@ -140,20 +140,20 @@ if st.button("Ask") and question:
             st.subheader("Answer")
             st.write(answer)
 
-            st.dataframe(result)
             st.subheader("Data")
-            
+            st.dataframe(result)
 
+# Charts
             if not result.empty and len(result.columns) >= 2:
                 label_col = result.columns[0]
-                value_col = result.columns[1]
+                numeric_cols = result.select_dtypes(include=["number"]).columns
 
-            if result[value_col].dtype in ["int64", "float64", "int32", "float32"]:
-                chart_data = result[[label_col, value_col]].set_index(label_col)
-                st.subheader("Chart")
-                st.bar_chart(chart_data)
+                if len(numeric_cols) > 0:
+                    value_col = numeric_cols[0]
+                    chart_data = result[[label_col, value_col]].set_index(label_col)
 
-            
+                    st.subheader("Chart")
+                    st.bar_chart(chart_data)
 
             with st.expander("Generated SQL"):
                 st.code(sql, language="sql")
