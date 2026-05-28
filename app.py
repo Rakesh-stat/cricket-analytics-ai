@@ -11,7 +11,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 st.set_page_config(page_title="Cricket Analytics Assistant", page_icon="🏏")
 
 st.title("🏏 Cricket Analytics Assistant")
-st.write("Ask cricket stats questions from your ball-by-ball database.")
+st.write("Built for cricket addicts who think scorecards are bedtime stories 📈🏏")
 @st.cache_resource
 def get_connection():
     return duckdb.connect("cricket.db")
