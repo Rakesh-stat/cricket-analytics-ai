@@ -58,6 +58,8 @@ Do not use outside cricket knowledge.
 -Strike rate =(SUM(runs_batter) * 100.0) / COUNT(*)
 - Economy rate =SUM(runs_total) * 6.0 / COUNT(*) 
 - Batting average =SUM(runs_batter) / number_of_times_out
+- Bowling average = total runs conceded across ALL deliveries divided by wickets taken.
+- Do NOT filter rows to wicket deliveries before calculating runs conceded.
 player_out is the batter who got out.
 - bowler is the bowler who delivered the ball.
 - For "who took most wickets", group by bowler, NOT player_out.
