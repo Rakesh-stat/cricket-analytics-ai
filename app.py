@@ -9,7 +9,11 @@ load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-con = duckdb.connect("cricket.db")
+@st.cache_resource
+def get_connection():
+    return duckdb.connect("cricket.db")
+
+con = get_connection()
 
 SCHEMA = """
 matches(match_id, date, event, season, match_type, venue, city, team1, team2, winner,win_by_runs,win_by_wickets,
@@ -119,6 +123,7 @@ st.write("Ask cricket stats questions from your ball-by-ball database.")
 
 question = st.text_input("Ask a question", placeholder="Who is the top run scorer in IPL 2015?")
 
+
 if st.button("Ask") and question:
     try:
         sql = generate_sql(question)
@@ -135,8 +140,17 @@ if st.button("Ask") and question:
             st.write(answer)
 
             st.dataframe(result)
-            if len(result.columns) >= 2:
-                st.bar_chart(result.set_index(result.columns[0]))
+            st.subheader("Data")
+            
+
+            if not result.empty and len(result.columns) >= 2:
+                label_col = result.columns[0]
+                value_col = result.columns[1]
+
+            if result[value_col].dtype in ["int64", "float64", "int32", "float32"]:
+                chart_data = result[[label_col, value_col]].set_index(label_col)
+                st.subheader("Chart")
+                st.bar_chart(chart_data)
 
             
 
@@ -145,3 +159,11 @@ if st.button("Ask") and question:
 
     except Exception as e:
         st.error(str(e))
+
+st.markdown("""
+### Example Questions
+- Who scored most runs in IPL 2016?
+- Which bowler took most wickets in IPL history?
+- Who faced most dot balls?
+- Which team won most IPL matches?
+""")
