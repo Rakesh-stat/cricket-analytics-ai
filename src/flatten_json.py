@@ -16,6 +16,19 @@ for file_path in RAW_DIR.glob("*.json"):
     info = data["info"]
     match_id = file_path.stem
     teams = info.get("teams", [])
+    winner = info.get("outcome", {}).get("winner")
+
+    teams = info.get("teams", [])
+
+    team1 = teams[0] if len(teams) > 0 else None
+    team2 = teams[1] if len(teams) > 1 else None
+
+    losing_team = None
+
+    if winner == team1:
+        losing_team = team2
+    elif winner == team2:
+        losing_team = team1
 
     match_rows.append({
         "match_id": match_id,
@@ -26,7 +39,8 @@ for file_path in RAW_DIR.glob("*.json"):
         "city": info.get("city"),
         "team1": teams[0] if len(teams) > 0 else None,
         "team2": teams[1] if len(teams) > 1 else None,
-        "winner": info.get("outcome", {}).get("winner"),
+        "winner": winner,
+        "losing_team": losing_team,
         "win_by_runs": info.get("outcome", {}).get("by", {}).get("runs"),
         "win_by_wickets": info.get("outcome", {}).get("by", {}).get("wickets"),
         "toss_winner": info.get("toss", {}).get("winner"),

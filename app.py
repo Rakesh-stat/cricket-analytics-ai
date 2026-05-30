@@ -4,6 +4,7 @@ import duckdb
 import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
+from sql_templates import get_template_sql
 
 load_dotenv()
 
@@ -88,6 +89,14 @@ Cricket team result rules:
 - For total matches played by teams:
   combine appearances as both team1 and team2 using UNION ALL,
   then SUM the counts grouped by team.
+-If multiple seasons are requested:
+    return one answer per season.
+
+-If one season is requested:
+    return one answer.
+
+-If no season is requested:
+    return overall career/IPL answer.
 Question:
 {question}
 """
@@ -127,9 +136,16 @@ question = st.text_input("Ask a question", placeholder="Who is the top run score
 
 if st.button("Ask") and question:
     try:
-        sql = generate_sql(question)
+        template_sql = get_template_sql(question)
 
-        if not sql.lower().startswith("select"):
+        if template_sql:
+            sql = template_sql
+            result = con.execute(sql).fetchdf()
+            
+        else:
+            sql = generate_sql(question)
+
+        if not sql.lower().strip().startswith(("select", "with")):
             st.error("Generated query was not a SELECT query.")
             st.code(sql)
         else:
@@ -143,17 +159,20 @@ if st.button("Ask") and question:
             st.subheader("Data")
             st.dataframe(result)
 
-# Charts
-            if not result.empty and len(result.columns) >= 2:
+
+
+#  chart logic
+            numeric_cols = result.select_dtypes(include="number").columns.tolist()
+
+            if not result.empty and len(numeric_cols) > 0:
                 label_col = result.columns[0]
-                numeric_cols = result.select_dtypes(include=["number"]).columns
+                value_col = numeric_cols[-1]
 
-                if len(numeric_cols) > 0:
-                    value_col = numeric_cols[0]
-                    chart_data = result[[label_col, value_col]].set_index(label_col)
+                chart_data = result[[label_col, value_col]].copy()
+                chart_data[label_col] = chart_data[label_col].astype(str)
 
-                    st.subheader("Chart")
-                    st.bar_chart(chart_data)
+                st.subheader("Chart")
+                st.bar_chart(chart_data.set_index(label_col)[value_col])
 
             with st.expander("Generated SQL"):
                 st.code(sql, language="sql")
